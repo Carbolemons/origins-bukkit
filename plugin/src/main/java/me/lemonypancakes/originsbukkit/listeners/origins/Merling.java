@@ -503,7 +503,7 @@ public class Merling extends Origin implements Listener {
             }
         }.runTaskTimerAsynchronously(getOriginListenerHandler()
                 .getListenerHandler()
-                .getPlugin(), 0L, 20L);
+                .getPlugin(), 0L, 4L);
     }
 
     /**
