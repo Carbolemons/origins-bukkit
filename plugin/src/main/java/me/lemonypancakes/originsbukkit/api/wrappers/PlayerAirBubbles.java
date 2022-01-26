@@ -91,7 +91,7 @@ public class PlayerAirBubbles extends BukkitRunnable {
                     .getListenerHandler()
                     .getOriginListenerHandler()
                     .getMerling()
-                    .merlingAirTicks
+                    .getMerlingAirTicks()
                     .get(getPlayer().getUniqueId());
             WrapperPlayServerEntityMetadata wrapper
                     = new WrapperPlayServerEntityMetadata();

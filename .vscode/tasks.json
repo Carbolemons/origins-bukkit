@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build",
+            "label": "Build+Run",
             "dependsOn": ["fullscreen", "build+run"],
             "group": {
                 "kind": "build",
@@ -12,7 +12,7 @@
             }
         },
         {
-            "label": "BuildOnly",
+            "label": "Build",
             "dependsOn": ["fullscreen", "build+jar"],
             "group": {
                 "kind": "build",

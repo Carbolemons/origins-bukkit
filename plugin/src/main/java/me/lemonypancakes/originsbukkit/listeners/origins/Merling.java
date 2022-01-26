@@ -26,7 +26,6 @@ import com.comphenix.protocol.wrappers.EnumWrappers;
 import me.lemonypancakes.originsbukkit.api.events.player.AsyncPlayerOriginChangeEvent;
 import me.lemonypancakes.originsbukkit.api.events.player.AsyncPlayerOriginInitiateEvent;
 import me.lemonypancakes.originsbukkit.api.util.Origin;
-import me.lemonypancakes.originsbukkit.util.ChatUtils;
 import me.lemonypancakes.originsbukkit.api.wrappers.OriginPlayer;
 import me.lemonypancakes.originsbukkit.api.wrappers.PlayerAirBubbles;
 import me.lemonypancakes.originsbukkit.enums.Config;
@@ -65,10 +64,64 @@ public class Merling extends Origin implements Listener {
 
     private final OriginListenerHandler originListenerHandler;
     private final Map<UUID, Integer> merlingAirBreathing = new HashMap<>();
-    public final Map<UUID, Integer> merlingAirTicks = new HashMap<>();
+    private final Map<UUID, Integer> merlingAirTicks = new HashMap<>();
     private final Map<UUID, PlayerAirBubbles> merlingAirBubbles = new HashMap<>();
     private final List<UUID> merlingWaterBreathing = new ArrayList<>();
     private final List<UUID> merlingAirDamage = new ArrayList<>();
+
+    /**
+     * Gets origin listener handler.
+     *
+     * @return the origin listener handler
+     */
+    public OriginListenerHandler getOriginListenerHandler() {
+        return originListenerHandler;
+    }
+
+    /**
+     * Gets merling air breathing.
+     *
+     * @return the merling air breathing
+     */
+    public Map<UUID, Integer> getMerlingAirBreathing() {
+        return merlingAirBreathing;
+    }
+
+    /**
+     * Gets merling air ticks.
+     *
+     * @return the merling air ticks
+     */
+    public Map<UUID, Integer> getMerlingAirTicks() {
+        return merlingAirTicks;
+    }
+
+    /**
+     * Gets merling air bubbles.
+     *
+     * @return the merling air bubbles
+     */
+    public Map<UUID, PlayerAirBubbles> getMerlingAirBubbles() {
+        return merlingAirBubbles;
+    }
+
+    /**
+     * Gets merling water breathing.
+     *
+     * @return the merling water breathing
+     */
+    public List<UUID> getMerlingWaterBreathing() {
+        return merlingWaterBreathing;
+    }
+
+    /**
+     * Gets merling air damage.
+     *
+     * @return the merling air damage
+     */
+    public List<UUID> getMerlingAirDamage() {
+        return merlingAirDamage;
+    }
 
     /**
      * Instantiates a new Merling.
@@ -157,12 +210,12 @@ public class Merling extends Origin implements Listener {
      * Init.
      */
     private void init() {
-        originListenerHandler
+        getOriginListenerHandler()
                 .getListenerHandler()
                 .getPlugin()
                 .getServer()
                 .getPluginManager()
-                .registerEvents(this, originListenerHandler
+                .registerEvents(this, getOriginListenerHandler()
                         .getListenerHandler()
                         .getPlugin());
         registerOrigin(this);
@@ -188,21 +241,21 @@ public class Merling extends Origin implements Listener {
 
         if (Objects.equals(origin, Origins.MERLING.toString())) {
             if (originPlayer.findMerlingTimerSessionData() != null) {
-                merlingAirBreathing.put(
+                getMerlingAirBreathing().put(
                         playerUUID,
                         originPlayer.getMerlingTimerSessionDataTimeLeft());
-                merlingAirTicks.put(
+                getMerlingAirTicks().put(
                         playerUUID,
                         switchAirTicks(
                                 calculatePercentage(
-                                        merlingAirBreathing
+                                        getMerlingAirBreathing()
                                                 .get(playerUUID), maxTime)));
             } else {
-                merlingAirTicks.put(playerUUID, -27);
-                merlingWaterBreathing.add(playerUUID);
+                getMerlingAirTicks().put(playerUUID, -27);
+                getMerlingWaterBreathing().add(playerUUID);
             }
             PlayerAirBubbles playerAirBubbles = new PlayerAirBubbles(player);
-            merlingAirBubbles.put(playerUUID, playerAirBubbles);
+            getMerlingAirBubbles().put(playerUUID, playerAirBubbles);
         }
     }
 
@@ -223,34 +276,9 @@ public class Merling extends Origin implements Listener {
                 public void run() {
                     player.removePotionEffect(PotionEffectType.NIGHT_VISION);
                 }
-            }.runTask(originListenerHandler
+            }.runTask(getOriginListenerHandler()
                     .getListenerHandler()
                     .getPlugin());
-        }
-    }
-
-    /**
-     * Merling swimming grace.
-     *
-     * @param event the event
-     */
-    @EventHandler
-    private void merlingGrace(PlayerToggleSprintEvent event) {
-        
-        Player player = event.getPlayer();
-        OriginPlayer originPlayer = new OriginPlayer(player);
-        String playerOrigin = originPlayer.getOrigin();
-
-        if (Objects.equals(playerOrigin, Origins.MERLING.toString())) {
-        
-            Material m = event.getPlayer().getLocation().getBlock().getType();
-        
-            if (!player.isSprinting() && player.isInWater() && m == Material.WATER) {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.DOLPHINS_GRACE, Integer.MAX_VALUE, 1, true, true));
-        
-            } else {
-                player.removePotionEffect(PotionEffectType.DOLPHINS_GRACE);
-            }
         }
     }
 
@@ -276,6 +304,32 @@ public class Merling extends Origin implements Listener {
                         event.setCancelled(true);
                     }
                 }
+            }
+        }
+    }
+
+
+    /**
+     * Merling swimming grace.
+     *
+     * @param event the event
+     */
+    @EventHandler
+    private void merlingGrace(PlayerToggleSprintEvent event) {
+        
+        Player player = event.getPlayer();
+        OriginPlayer originPlayer = new OriginPlayer(player);
+        String playerOrigin = originPlayer.getOrigin();
+
+        if (Objects.equals(playerOrigin, Origins.MERLING.toString())) {
+        
+            Material m = event.getPlayer().getLocation().getBlock().getType();
+        
+            if (!player.isSprinting() && player.isInWater() && m == Material.WATER) {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.DOLPHINS_GRACE, Integer.MAX_VALUE, 1, true, true));
+        
+            } else {
+                player.removePotionEffect(PotionEffectType.DOLPHINS_GRACE);
             }
         }
     }
@@ -327,23 +381,21 @@ public class Merling extends Origin implements Listener {
     }
 
     /**
-     * Register old air breathing listener.
-    */
+     * Register air breathing listener.
+     */
     private void registerAirBreathingListener() {
 
         new BukkitRunnable() {
 
             @Override
             public void run() {
-                if (!merlingAirBreathing.isEmpty()) {
-                    for (Map.Entry<UUID, Integer> entry : merlingAirBreathing.entrySet()) {
+                if (!getMerlingAirBreathing().isEmpty()) {
+                    for (Map.Entry<UUID, Integer> entry : getMerlingAirBreathing().entrySet()) {
                         UUID key = entry.getKey();
                         int value = entry.getValue();
                         Player player = Bukkit.getPlayer(key);
 
                         if (player != null) {
-
-                            // create new origin player  
                             OriginPlayer originPlayer = new OriginPlayer(player);
                             String playerOrigin = originPlayer.getOrigin();
                             Location location = player.getLocation();
@@ -351,101 +403,105 @@ public class Merling extends Origin implements Listener {
                             Material material = block.getType();
                             double maxTime = Config.ORIGINS_MERLING_AIR_BREATHING_MAX_TIME.toDouble();
 
-                            // is player is a merling and is online
-                            if (playerOrigin == Origins.MERLING.toString() && player.isOnline()) {
+                            if (Objects.equals(playerOrigin, Origins.MERLING.toString())) {
+                                if (player.isOnline()) {
+                                    getMerlingAirTicks().put(key, switchAirTicks(calculatePercentage(value, maxTime)));
 
-                                    // Put bubble percentage into the merlingAirTicks
-                                    merlingAirTicks.put(key, switchAirTicks(calculatePercentage(value, maxTime)));
-
-                                    // If no merlingTimerSessionData, create new data, else update to new value
                                     if (originPlayer.findMerlingTimerSessionData() == null) {
                                         originPlayer.createMerlingTimerSessionData(value);
                                     } else {
                                         originPlayer.updateMerlingTimerSessionData(
                                                 new MerlingTimerSessionDataWrapper(key, value));
                                     }
-
-                                    // refactor from here ===========================================================================
                                     if (value <= 0) {
-
-                                        if (player.isInWater() || material == Material.WATER_CAULDRON) {
-                                            value += 2;
-                                            merlingAirBreathing.put(key, value);
-                                        } else { // if player is not in water
-                                            if (!player.getWorld().hasStorm() && (!(location.getBlockY() > player.getWorld().getHighestBlockAt(location).getLocation().getBlockY()))) {
-                                                // If it is not storming or player is above max height
-                                                merlingAirDamage.add(key);
-                                                merlingAirBreathing.remove(key);
-                                            } else {
+                                        if (!player.getWorld().hasStorm()) {
+                                            if (player.isInWater() || material == Material.WATER_CAULDRON) {
                                                 value += 2;
-                                                merlingAirBreathing.put(key, value);
-                                            } // if player is in the storm
-                                        } 
-
-                                    } // If merling has no breathing points
-                                    
-                                    else {
+                                                getMerlingAirBreathing().put(key, value);
+                                            } else {
+                                                getMerlingAirDamage().add(key);
+                                                getMerlingAirBreathing().remove(key);
+                                            }
+                                        } else {
+                                            if (player.isInWater() || material == Material.WATER_CAULDRON) {
+                                                getMerlingAirBreathing().put(key, value + 2);
+                                            } else {
+                                                if (!(location.getBlockY() > player.getWorld().getHighestBlockAt(location).getLocation().getBlockY())) {
+                                                    getMerlingAirDamage().add(key);
+                                                    getMerlingAirBreathing().remove(key);
+                                                } else {
+                                                    value += 2;
+                                                    getMerlingAirBreathing().put(key, value);
+                                                }
+                                            }
+                                        }
+                                    } else {
                                         if (!player.getWorld().hasStorm()) {
                                             if (player.isInWater() || material == Material.WATER_CAULDRON) {
                                                 if (value < Config.ORIGINS_MERLING_AIR_BREATHING_MAX_TIME.toInt()) {
                                                     value += 2;
-                                                    merlingAirBreathing.put(key, value);
+                                                    getMerlingAirBreathing().put(key, value);
                                                 } else {
                                                     if (originPlayer.findMerlingTimerSessionData() != null) {
                                                         originPlayer.deleteMerlingTimerSessionData();
                                                     }
-                                                    merlingWaterBreathing.add(key);
-                                                    merlingAirBreathing.remove(key);
-                                                    merlingAirTicks.put(key, -27);
+                                                    getMerlingWaterBreathing().add(key);
+                                                    getMerlingAirBreathing().remove(key);
+                                                    getMerlingAirTicks().put(key, -27);
                                                 }
                                             }
                                         } else {
                                             if (player.isInWater() || material == Material.WATER_CAULDRON) {
                                                 if (value < Config.ORIGINS_MERLING_AIR_BREATHING_MAX_TIME.toInt()) {
                                                     value += 2;
-                                                    merlingAirBreathing.put(key, value);
+                                                    getMerlingAirBreathing().put(key, value);
                                                 } else {
                                                     if (originPlayer.findMerlingTimerSessionData() != null) {
                                                         originPlayer.deleteMerlingTimerSessionData();
                                                     }
-                                                    merlingWaterBreathing.add(key);
-                                                    merlingAirBreathing.remove(key);
-                                                    merlingAirTicks.put(key, -27);
+                                                    getMerlingWaterBreathing().add(key);
+                                                    getMerlingAirBreathing().remove(key);
+                                                    getMerlingAirTicks().put(key, -27);
                                                 }
                                             } else {
                                                 if (location.getBlockY() > player.getWorld().getHighestBlockAt(location).getLocation().getBlockY()) {
                                                     if (value < Config.ORIGINS_MERLING_AIR_BREATHING_MAX_TIME.toInt()) {
                                                         value += 2;
-                                                        merlingAirBreathing.put(key, value);
+                                                        getMerlingAirBreathing().put(key, value);
                                                     } else {
                                                         if (originPlayer.findMerlingTimerSessionData() != null) {
                                                             originPlayer.deleteMerlingTimerSessionData();
                                                         }
-                                                        merlingWaterBreathing.add(key);
-                                                        merlingAirBreathing.remove(key);
-                                                        merlingAirTicks.put(key, -27);
+                                                        getMerlingWaterBreathing().add(key);
+                                                        getMerlingAirBreathing().remove(key);
+                                                        getMerlingAirTicks().put(key, -27);
                                                     }
                                                 }
                                             }
                                         }
                                     }
-                                    if (value > 0 && merlingAirBreathing.containsKey(key)) {
+                                    if (value > 0 && getMerlingAirBreathing().containsKey(key)) {
                                         value--;
-                                        merlingAirBreathing.put(key, value);
+                                        getMerlingAirBreathing().put(key, value);
                                     }
+                                } else {
+                                    getMerlingAirBreathing().remove(key);
+                                    getMerlingAirBubbles().get(key).cancel();
+                                    getMerlingAirBubbles().remove(key);
+                                }
                             } else {
                                 if (originPlayer.findMerlingTimerSessionData() != null) {
                                     originPlayer.deleteMerlingTimerSessionData();
                                 }
-                                merlingAirBreathing.remove(key);
-                                merlingAirBubbles.get(key).cancel();
-                                merlingAirBubbles.remove(key);
+                                getMerlingAirBreathing().remove(key);
+                                getMerlingAirBubbles().get(key).cancel();
+                                getMerlingAirBubbles().remove(key);
                             }
-                        } 
+                        }
                     }
                 }
             }
-        }.runTaskTimerAsynchronously(originListenerHandler
+        }.runTaskTimerAsynchronously(getOriginListenerHandler()
                 .getListenerHandler()
                 .getPlugin(), 0L, 20L);
     }
@@ -459,9 +515,9 @@ public class Merling extends Origin implements Listener {
 
             @Override
             public void run() {
-                if (!merlingWaterBreathing.isEmpty()) {
-                    for (int i = 0; i < merlingWaterBreathing.size(); i++) {
-                        Player player = Bukkit.getPlayer(merlingWaterBreathing.get(i));
+                if (!getMerlingWaterBreathing().isEmpty()) {
+                    for (int i = 0; i < getMerlingWaterBreathing().size(); i++) {
+                        Player player = Bukkit.getPlayer(getMerlingWaterBreathing().get(i));
 
                         if (player != null) {
                             UUID playerUUID = player.getUniqueId();
@@ -478,52 +534,52 @@ public class Merling extends Origin implements Listener {
                                         if (!(player.isInWater() || material == Material.WATER_CAULDRON)) {
                                             if (originPlayer.findMerlingTimerSessionData() != null) {
                                                 if (timeLeft != 0) {
-                                                    merlingAirBreathing.put(playerUUID, timeLeft);
-                                                    merlingWaterBreathing.remove(playerUUID);
+                                                    getMerlingAirBreathing().put(playerUUID, timeLeft);
+                                                    getMerlingWaterBreathing().remove(playerUUID);
                                                 } else {
-                                                    merlingAirDamage.add(playerUUID);
+                                                    getMerlingAirDamage().add(playerUUID);
                                                 }
                                             } else {
-                                                merlingAirBreathing.put(playerUUID, Config.ORIGINS_MERLING_AIR_BREATHING_MAX_TIME.toInt());
+                                                getMerlingAirBreathing().put(playerUUID, Config.ORIGINS_MERLING_AIR_BREATHING_MAX_TIME.toInt());
                                             }
-                                            merlingWaterBreathing.remove(playerUUID);
+                                            getMerlingWaterBreathing().remove(playerUUID);
                                         }
                                     } else {
                                         if (!(player.isInWater() || material == Material.WATER_CAULDRON)) {
                                             if (!(location.getBlockY() > player.getWorld().getHighestBlockAt(location).getLocation().getBlockY())) {
                                                 if (originPlayer.findMerlingTimerSessionData() != null) {
                                                     if (timeLeft != 0) {
-                                                        merlingAirBreathing.put(playerUUID, timeLeft);
+                                                        getMerlingAirBreathing().put(playerUUID, timeLeft);
                                                     } else {
-                                                        merlingAirDamage.add(playerUUID);
+                                                        getMerlingAirDamage().add(playerUUID);
                                                     }
                                                 } else {
-                                                    merlingAirBreathing.put(playerUUID, Config.ORIGINS_MERLING_AIR_BREATHING_MAX_TIME.toInt());
+                                                    getMerlingAirBreathing().put(playerUUID, Config.ORIGINS_MERLING_AIR_BREATHING_MAX_TIME.toInt());
                                                 }
-                                                merlingWaterBreathing.remove(playerUUID);
+                                                getMerlingWaterBreathing().remove(playerUUID);
                                             } else {
                                                 if (originPlayer.findMerlingTimerSessionData() != null) {
-                                                    merlingAirBreathing.put(playerUUID, timeLeft);
-                                                    merlingWaterBreathing.remove(playerUUID);
+                                                    getMerlingAirBreathing().put(playerUUID, timeLeft);
+                                                    getMerlingWaterBreathing().remove(playerUUID);
                                                 }
                                             }
                                         }
                                     }
                                 } else {
-                                    merlingWaterBreathing.remove(playerUUID);
-                                    merlingAirBubbles.get(playerUUID).cancel();
-                                    merlingAirBubbles.remove(playerUUID);
+                                    getMerlingWaterBreathing().remove(playerUUID);
+                                    getMerlingAirBubbles().get(playerUUID).cancel();
+                                    getMerlingAirBubbles().remove(playerUUID);
                                 }
                             } else {
-                                merlingWaterBreathing.remove(playerUUID);
-                                merlingAirBubbles.get(playerUUID).cancel();
-                                merlingAirBubbles.remove(playerUUID);
+                                getMerlingWaterBreathing().remove(playerUUID);
+                                getMerlingAirBubbles().get(playerUUID).cancel();
+                                getMerlingAirBubbles().remove(playerUUID);
                             }
                         }
                     }
                 }
             }
-        }.runTaskTimerAsynchronously(originListenerHandler
+        }.runTaskTimerAsynchronously(getOriginListenerHandler()
                 .getListenerHandler()
                 .getPlugin(), 0L, 5L);
     }
@@ -537,9 +593,9 @@ public class Merling extends Origin implements Listener {
 
             @Override
             public void run() {
-                if (!merlingAirDamage.isEmpty()) {
-                    for (int i = 0; i < merlingAirDamage.size(); i++) {
-                        Player player = Bukkit.getPlayer(merlingAirDamage.get(i));
+                if (!getMerlingAirDamage().isEmpty()) {
+                    for (int i = 0; i < getMerlingAirDamage().size(); i++) {
+                        Player player = Bukkit.getPlayer(getMerlingAirDamage().get(i));
 
                         if (player != null) {
                             UUID playerUUID = player.getUniqueId();
@@ -555,44 +611,44 @@ public class Merling extends Origin implements Listener {
                                     if (!player.getWorld().hasStorm()) {
                                         if (player.isInWater() || material == Material.WATER_CAULDRON) {
                                             if (originPlayer.findMerlingTimerSessionData() != null) {
-                                                merlingAirBreathing.put(playerUUID, timeLeft);
+                                                getMerlingAirBreathing().put(playerUUID, timeLeft);
                                             }
-                                            merlingAirDamage.remove(playerUUID);
+                                            getMerlingAirDamage().remove(playerUUID);
                                         } else {
                                             damageMerling(player, Config.ORIGINS_MERLING_AIR_BREATHING_DAMAGE_AMOUNT.toDouble());
                                         }
                                     } else {
                                         if (player.isInWater() || material == Material.WATER_CAULDRON) {
                                             if (originPlayer.findMerlingTimerSessionData() != null) {
-                                                merlingAirBreathing.put(playerUUID, timeLeft);
+                                                getMerlingAirBreathing().put(playerUUID, timeLeft);
                                             }
-                                            merlingAirDamage.remove(playerUUID);
+                                            getMerlingAirDamage().remove(playerUUID);
                                         } else {
                                             if (!(location.getBlockY() > player.getWorld().getHighestBlockAt(location).getLocation().getBlockY())) {
                                                 damageMerling(player, Config.ORIGINS_MERLING_AIR_BREATHING_DAMAGE_AMOUNT.toDouble());
                                             } else {
                                                 if (originPlayer.findMerlingTimerSessionData() != null) {
-                                                    merlingAirBreathing.put(playerUUID, timeLeft);
+                                                    getMerlingAirBreathing().put(playerUUID, timeLeft);
                                                 }
-                                                merlingAirDamage.remove(playerUUID);
+                                                getMerlingAirDamage().remove(playerUUID);
                                             }
                                         }
                                     }
                                 } else {
-                                    merlingAirDamage.remove(playerUUID);
-                                    merlingAirBubbles.get(playerUUID).cancel();
-                                    merlingAirBubbles.remove(playerUUID);
+                                    getMerlingAirDamage().remove(playerUUID);
+                                    getMerlingAirBubbles().get(playerUUID).cancel();
+                                    getMerlingAirBubbles().remove(playerUUID);
                                 }
                             } else {
-                                merlingAirDamage.remove(playerUUID);
-                                merlingAirBubbles.get(playerUUID).cancel();
-                                merlingAirBubbles.remove(playerUUID);
+                                getMerlingAirDamage().remove(playerUUID);
+                                getMerlingAirBubbles().get(playerUUID).cancel();
+                                getMerlingAirBubbles().remove(playerUUID);
                             }
                         }
                     }
                 }
             }
-        }.runTaskTimerAsynchronously(originListenerHandler
+        }.runTaskTimerAsynchronously(getOriginListenerHandler()
                 .getListenerHandler()
                 .getPlugin(), Config.ORIGINS_MERLING_AIR_BREATHING_DAMAGE_DELAY.toLong(), Config.ORIGINS_MERLING_AIR_BREATHING_DAMAGE_PERIOD_DELAY.toLong());
     }
@@ -611,7 +667,7 @@ public class Merling extends Origin implements Listener {
             public void run() {
                 player.damage(amount);
             }
-        }.runTask(originListenerHandler
+        }.runTask(getOriginListenerHandler()
                 .getListenerHandler()
                 .getPlugin());
     }
@@ -653,8 +709,8 @@ public class Merling extends Origin implements Listener {
      * Register merling block digging packet listener.
      */
     private void registerMerlingBlockDiggingPacketListener() {
-        originListenerHandler.getListenerHandler().getPlugin().getProtocolManager().addPacketListener(
-                new PacketAdapter(originListenerHandler.getListenerHandler().getPlugin(), ListenerPriority.NORMAL, PacketType.Play.Client.BLOCK_DIG) {
+        getOriginListenerHandler().getListenerHandler().getPlugin().getProtocolManager().addPacketListener(
+                new PacketAdapter(getOriginListenerHandler().getListenerHandler().getPlugin(), ListenerPriority.NORMAL, PacketType.Play.Client.BLOCK_DIG) {
 
             @Override
             public void onPacketReceiving(PacketEvent event) {
@@ -702,8 +758,8 @@ public class Merling extends Origin implements Listener {
      * Register merling move packet listener.
      */
     private void registerMerlingMovePacketListener() {
-        originListenerHandler.getListenerHandler().getPlugin().getProtocolManager().addPacketListener(
-                new PacketAdapter(originListenerHandler.getListenerHandler().getPlugin(), ListenerPriority.NORMAL, PacketType.Play.Client.POSITION) {
+        getOriginListenerHandler().getListenerHandler().getPlugin().getProtocolManager().addPacketListener(
+                new PacketAdapter(getOriginListenerHandler().getListenerHandler().getPlugin(), ListenerPriority.NORMAL, PacketType.Play.Client.POSITION) {
 
             @Override
             public void onPacketReceiving(PacketEvent event) {
